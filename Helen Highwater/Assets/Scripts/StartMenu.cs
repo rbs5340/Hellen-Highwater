@@ -1,11 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
-    public GameObject canvas;
-    public GameObject eel;
 
     // Start is called before the first frame update
     void Start()
@@ -19,9 +18,8 @@ public class UIManager : MonoBehaviour
         
     }
 
-    public void StartGame()
+    public void LoadGame(string scenename)
     {
-        canvas.SetActive(false);
-        eel.SetActive(true);
+        SceneManager.LoadScene(scenename);
     }
 }
