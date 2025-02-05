@@ -4,7 +4,7 @@ using Rewired;
 
 public class PlayerController : MonoBehaviour
 {
-    public int playerId = 0; // The Rewired player ID (for a single player game should always be 0)
+    public int playerId = 0; // The Rewired player ID (for a single player game, should always be 0)
     private Rewired.Player player; // The Rewired Player
 
     private Rigidbody2D rb;
@@ -42,6 +42,8 @@ public class PlayerController : MonoBehaviour
         HandleAttack();
     }
 
+    private float lastDirection = 1f; // 1 for right, -1 for left
+
     private void HandleMovement()
     {
         direction = player.GetAxis("MoveHorizontal");
@@ -49,10 +51,11 @@ public class PlayerController : MonoBehaviour
         if (Mathf.Abs(direction) > 0.1f) // small dead zone to prevent jitter
         {
             rb.velocity = new Vector2(direction * moveSpeed, rb.velocity.y);
+            lastDirection = Mathf.Sign(direction); // Update last facing direction
         }
         else
         {
-            // apply deceleration
+            // Apply deceleration
             rb.velocity = new Vector2(rb.velocity.x * decelerationFactor, rb.velocity.y);
         }
     }
@@ -62,7 +65,7 @@ public class PlayerController : MonoBehaviour
         if (player.GetButtonDown("Jump") && isGrounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpStrength);
-            isGrounded = false; // prevent jumping in midair
+            isGrounded = false;
         }
     }
 
@@ -70,9 +73,16 @@ public class PlayerController : MonoBehaviour
     {
         if (player.GetButtonDown("Attack") && WrenchPrefab && attackSpawnPoint)
         {
-            Instantiate(WrenchPrefab, attackSpawnPoint.position, attackSpawnPoint.rotation);
+            GameObject wrench = Instantiate(WrenchPrefab, attackSpawnPoint.position, Quaternion.identity);
+            WrenchBehaviour wrenchScript = wrench.GetComponent<WrenchBehaviour>();
+
+            if (wrenchScript)
+            {
+                wrenchScript.Initialize(lastDirection, transform);
+            }
         }
     }
+
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
