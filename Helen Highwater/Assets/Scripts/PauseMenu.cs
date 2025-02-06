@@ -5,8 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class PauseMenu : MonoBehaviour
 {
-    //Gameplay Objects is an empty game object that all gameplay elements can go in. If this is done then everything can be uncommented and less pause percautions will have to be taken
-    //public GameObject gameplayObjects;
+    //Gameplay Objects is an empty game object that all gameplay elements can go into. If this is done then everything will deactivate
+    public GameObject gameplayObjects;
     public GameObject pauseButton;
     public GameObject pauseMenu;
 
@@ -25,7 +25,10 @@ public class PauseMenu : MonoBehaviour
     public void Pause()
     {
         Time.timeScale = 0f;
-        //gameplayObjects.SetActive(false);
+        if(gameplayObjects != null)
+        {
+            gameplayObjects.SetActive(false);
+        }
         pauseButton.SetActive(false);
         pauseMenu.SetActive(true);
     }
@@ -33,7 +36,10 @@ public class PauseMenu : MonoBehaviour
     public void Resume()
     {
         Time.timeScale = 1f;
-        //gameplayObjects.SetActive(true);
+        if (gameplayObjects != null)
+        {
+            gameplayObjects.SetActive(true);
+        }
         pauseButton.SetActive(true);
         pauseMenu.SetActive(false);
     }
