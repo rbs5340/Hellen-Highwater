@@ -3,7 +3,7 @@ using System.Collections;
 
 public class WrenchBehaviour : MonoBehaviour
 {
-    [Header("Boomerang Settings")]
+    [Header("Projectile Settings")]
     public float flightSpeed = 10f;  // speed of movement
     public float maxDistance = 5f;   // distance before returning
     public float pauseTime = 0.5f;   // time at peak before returning
@@ -32,17 +32,23 @@ public class WrenchBehaviour : MonoBehaviour
         yield return new WaitForSeconds(pauseTime);
 
         // return to player
-        yield return MoveToTarget(player.position);
+        yield return MoveToTarget(player.position, true);
 
         Destroy(gameObject);
     }
 
-    private IEnumerator MoveToTarget(Vector3 target)
+    private IEnumerator MoveToTarget(Vector3 target, bool trackPlayer = false)
     {
         while (Vector3.Distance(transform.position, target) > 0.1f)
         {
+            if (trackPlayer)
+            {
+                target = player.position;
+            }
+
             transform.position = Vector3.MoveTowards(transform.position, target, flightSpeed * Time.deltaTime);
             yield return null;
         }
     }
+
 }
