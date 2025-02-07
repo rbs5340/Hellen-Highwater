@@ -1,17 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using System.Collections;
+using Rewired;
 
-public class Playercontroller: MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed;
-    public float jumpStrength;
-    public Vector2 position;
-    public Vector2 velocity;
-    private bool moving;
-    private float direction;
-    private state playerState;
+    public int playerId = 0; // The Rewired player ID (for a single player game, should always be 0)
+    private Rewired.Player player; // The Rewired Player
 
 
     //Player states for all actions so far. i have a different rising and falling state in case we want to change the gravity to make the platforming feel better,
@@ -24,128 +18,91 @@ public class Playercontroller: MonoBehaviour
         damaged,
         wrenchThrow,
         dash
-
     }
+    
     private Rigidbody2D rb;
-    // Start is called before the first frame update
-    void Start()
+
+    [Header("Movement Settings")]
+    public float moveSpeed = 5f;
+    public float jumpStrength = 10f;
+    public float decelerationFactor = 0.9f;
+
+    [Header("Attack Settings")]
+    public GameObject WrenchPrefab;
+    public Transform attackSpawnPoint;
+
+    private bool isGrounded;
+    private float direction;
+
+    private void Start()
     {
+        // Get Rewired Player
+        player = ReInput.players.GetPlayer(playerId);
+
+        // Get Rigidbody2D
         rb = GetComponent<Rigidbody2D>();
-        playerState = state.idle;
-        //velocity = new Vector2(0, 0);
+
+        if (!rb)
+        {
+            Debug.LogError("No Rigidbody2D found on Player!");
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
+        HandleMovement();
+        HandleJumping();
+        HandleAttack();
+    }
 
-        switch (playerState) {
-            case state.idle:
-                if(rb.velocity.y > 0)
-                {
-                    playerState = state.rise;
-                }
-                else if(rb.velocity.y < 0)
-                {
-                    playerState = state.fall;
-                }
-                if (rb.velocity.x != 0)
-                {
-                    playerState = state.run;
-                }
+    private float lastDirection = 1f; // 1 for right, -1 for left
 
-                break;
-            case state.run:
-                if (rb.velocity.y > 0)
-                {
-                    playerState = state.rise;
-                }
-                else if (rb.velocity.y < 0)
-                {
-                    playerState = state.fall;
-                }
-                if (rb.velocity.x == 0)
-                {
-                    playerState = state.idle;
-                }
-                break;
-            case state.rise:
-                if (rb.velocity.y == 0)
-                {
-                    playerState = state.idle;
-                }
-                else if(rb.velocity.y < 0)
-                {
-                    playerState = state.fall;
-                }
-                break;
+    private void HandleMovement()
+    {
+        direction = player.GetAxis("MoveHorizontal");
 
-            case state.fall:
-                if (rb.velocity.y == 0)
-                {
-                    playerState = state.idle;
-                }
-                break;
+        if (Mathf.Abs(direction) > 0.1f) // small dead zone to prevent jitter
 
-            case state.damaged:
-
-            case state.wrenchThrow:
-
-            case state.dash:
-
-
-            default:
-                break;
-        }
-
-        direction = Input.GetAxis("Horizontal");
-        if (direction > 0f || direction < 0f)
         {
             rb.velocity = new Vector2(direction * moveSpeed, rb.velocity.y);
+            lastDirection = Mathf.Sign(direction); // Update last facing direction
         }
         else
         {
-
-            rb.velocity = new Vector2(0, rb.velocity.y);
-
+        // Apply deceleration
+            rb.velocity = new Vector2(rb.velocity.x * decelerationFactor, rb.velocity.y);
         }
-        if (Input.GetButtonDown("Jump") && rb.velocity.y == 0)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, jumpStrength);
-        }
-
-        Debug.Log(playerState.ToString());
-
-
-        /*
-
-if  (Input.GetKey(KeyCode.LeftArrow))
-{
-    velocity.x = -1 * moveSpeed;
-    Debug.Log("LEFT DOWN");
-}
-
-
-else if (Input.GetKey(KeyCode.RightArrow))
-{
-    velocity.x = 1 * moveSpeed;
-    Debug.Log("RIGHT DONW");
-}
-
-//Slowly stop the player after inputs are done
-else
-{
-    if(Mathf.Abs(velocity.x) > 0)
-    {
-        velocity.x *= 0.99f;
-        Debug.Log("NMOOO");
     }
 
+    private void HandleJumping()
+    {
+        if (player.GetButtonDown("Jump") && isGrounded)
 
-}
-//velocity.y = rb.velocity.y;
-position += velocity;
-transform.position = position;
-*/
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpStrength);
+            isGrounded = false;
+        }
+    }
+
+    private void HandleAttack()
+    {
+        if (player.GetButtonDown("Attack") && WrenchPrefab && attackSpawnPoint)
+        {
+            GameObject wrench = Instantiate(WrenchPrefab, attackSpawnPoint.position, Quaternion.identity);
+            WrenchBehaviour wrenchScript = wrench.GetComponent<WrenchBehaviour>();
+
+            if (wrenchScript)
+            {
+                wrenchScript.Initialize(lastDirection, transform);
+            }
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = true;
+        }
     }
 }
