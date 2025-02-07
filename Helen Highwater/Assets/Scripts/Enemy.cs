@@ -6,14 +6,17 @@ public class Enemy : MonoBehaviour
 {
     [SerializeField] private float speedValue; // How much distance the enemy will cover each frame
     [SerializeField] private int timerValue; // Number of frames that the enemy will pause for
-    [SerializeField] private BoxCollider2D myCollider;
+    [SerializeField] private BoxCollider2D myCollider; // This enemy's collision box
 
-    private float speed;
-    private int timer;
-    private bool edgeOfPlat;
-    private bool isAlive;
+    private float speed; // Movement speed of the enemy
+    private int timer; // Number of frames the enemy will pause for
+    private bool edgeOfPlat; // Whether or not the enemy has reached the end of the platform
+    private bool isAlive; // Is this enemy alive or not
 
-    private Camera gameCamera;
+    private Camera gameCamera; // The game camera
+    // I intend to use the camera bounds to despawn the enemy when it is dead
+    // and off screen. Might also use it to deactivate entities that are offscreen
+    // if performance issues arise, but that is not yet necessary.
 
     // Start is called before the first frame update
     void Start()
@@ -44,6 +47,9 @@ public class Enemy : MonoBehaviour
 
         // Initializes game camera
         gameCamera = Camera.main;
+
+        // Starts playing walking sound effect (Doesn't appear to work on startup)
+        AudioManager.Instance.PlaySoundEffect("audioClip1");
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -55,7 +61,7 @@ public class Enemy : MonoBehaviour
             speed = 0;
             timer = 0;
             edgeOfPlat = true;
-            Debug.Log("Timer started");
+            //Debug.Log("Timer started");
         }
 
         // If enemt collides with hazard (lava)
@@ -84,6 +90,9 @@ public class Enemy : MonoBehaviour
                 transform.eulerAngles = new Vector3(transform.eulerAngles.x, 
                     transform.eulerAngles.y + 180, transform.eulerAngles.z);
                 edgeOfPlat = false;
+
+                // Starts playing walking sound effect (This one works fine)
+                AudioManager.Instance.PlaySoundEffect("audioClip1");
             }
         }
     }
@@ -131,5 +140,8 @@ public class Enemy : MonoBehaviour
         
         // Disables the collider
         myCollider.enabled = false;
+
+        // Placeholder death sound effect
+        AudioManager.Instance.PlaySoundEffect("audioClip2");
     }
 }
