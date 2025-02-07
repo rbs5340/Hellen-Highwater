@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using Rewired;
+using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
@@ -30,9 +31,13 @@ public class PlayerController : MonoBehaviour
     [Header("Attack Settings")]
     public GameObject WrenchPrefab;
     public Transform attackSpawnPoint;
+    public float attackAnimationTimer;
 
     private bool isGrounded;
+    private float attackTimer;
+     
     private float direction;
+    private state playerState;
 
     private void Start()
     {
@@ -41,6 +46,8 @@ public class PlayerController : MonoBehaviour
 
         // Get Rigidbody2D
         rb = GetComponent<Rigidbody2D>();
+
+        playerState = state.idle;
 
         if (!rb)
         {
@@ -53,6 +60,10 @@ public class PlayerController : MonoBehaviour
         HandleMovement();
         HandleJumping();
         HandleAttack();
+
+        //Logs player game state for testing purposes
+        Debug.Log(playerState.ToString());
+        
     }
 
     private float lastDirection = 1f; // 1 for right, -1 for left
@@ -66,11 +77,21 @@ public class PlayerController : MonoBehaviour
         {
             rb.velocity = new Vector2(direction * moveSpeed, rb.velocity.y);
             lastDirection = Mathf.Sign(direction); // Update last facing direction
+
+            if (isGrounded)
+            {
+                playerState = state.run;
+            }
         }
         else
         {
         // Apply deceleration
             rb.velocity = new Vector2(rb.velocity.x * decelerationFactor, rb.velocity.y);
+
+            if(rb.velocity.x == 0f && isGrounded)
+            {
+                playerState = state.idle;
+            }
         }
     }
 
@@ -81,6 +102,11 @@ public class PlayerController : MonoBehaviour
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpStrength);
             isGrounded = false;
+            playerState = state.rise;
+        }
+        if(rb.velocity.y < 0f)
+        {
+            playerState = state.fall;
         }
     }
 
@@ -88,6 +114,8 @@ public class PlayerController : MonoBehaviour
     {
         if (player.GetButtonDown("Attack") && WrenchPrefab && attackSpawnPoint)
         {
+            attackTimer = attackAnimationTimer;
+
             GameObject wrench = Instantiate(WrenchPrefab, attackSpawnPoint.position, Quaternion.identity);
             WrenchBehaviour wrenchScript = wrench.GetComponent<WrenchBehaviour>();
 
@@ -96,6 +124,13 @@ public class PlayerController : MonoBehaviour
                 wrenchScript.Initialize(lastDirection, transform);
             }
         }
+
+        //Handles wrench throwing state, should trump every other game state animation wise
+        if (attackTimer > 0)
+        {
+            playerState = state.wrenchThrow;
+            attackTimer -= Time.deltaTime;  
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -103,6 +138,14 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
+            if(Mathf.Abs(rb.velocity.x) > 0)
+            {
+                playerState = state.run;
+            }
+            else
+            {
+                playerState = state.idle;
+            }
         }
     }
 }
