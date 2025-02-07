@@ -7,6 +7,19 @@ public class PlayerController : MonoBehaviour
     public int playerId = 0; // The Rewired player ID (for a single player game, should always be 0)
     private Rewired.Player player; // The Rewired Player
 
+
+    //Player states for all actions so far. i have a different rising and falling state in case we want to change the gravity to make the platforming feel better,
+    enum state
+    {
+        idle,
+        run,
+        rise,
+        fall,
+        damaged,
+        wrenchThrow,
+        dash
+    }
+    
     private Rigidbody2D rb;
 
     [Header("Movement Settings")]
@@ -49,13 +62,14 @@ public class PlayerController : MonoBehaviour
         direction = player.GetAxis("MoveHorizontal");
 
         if (Mathf.Abs(direction) > 0.1f) // small dead zone to prevent jitter
+
         {
             rb.velocity = new Vector2(direction * moveSpeed, rb.velocity.y);
             lastDirection = Mathf.Sign(direction); // Update last facing direction
         }
         else
         {
-            // Apply deceleration
+        // Apply deceleration
             rb.velocity = new Vector2(rb.velocity.x * decelerationFactor, rb.velocity.y);
         }
     }
@@ -63,6 +77,7 @@ public class PlayerController : MonoBehaviour
     private void HandleJumping()
     {
         if (player.GetButtonDown("Jump") && isGrounded)
+
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpStrength);
             isGrounded = false;
@@ -82,7 +97,6 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
