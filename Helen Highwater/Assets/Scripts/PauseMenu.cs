@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -9,6 +11,9 @@ public class PauseMenu : MonoBehaviour
     public GameObject gameplayObjects;
     public GameObject pauseButton;
     public GameObject pauseMenu;
+    public GameObject optionsMenu;
+
+    public GameObject textTest;
 
     // Start is called before the first frame update
     void Start()
@@ -33,6 +38,18 @@ public class PauseMenu : MonoBehaviour
         pauseMenu.SetActive(true);
     }
 
+    public void OpenOptions()
+    {
+        optionsMenu.SetActive(true);
+        pauseMenu.SetActive(false);
+    }
+
+    public void CloseOptions()
+    {
+        optionsMenu.SetActive(false);
+        pauseMenu.SetActive(true);
+    }
+
     public void Resume()
     {
         Time.timeScale = 1f;
@@ -49,4 +66,21 @@ public class PauseMenu : MonoBehaviour
         Time.timeScale = 1f;
         SceneManager.LoadScene("StartMenu");
     }
+
+    public void SetMasterVolume(System.Single value)
+    {
+        AudioManager.Instance.SetMaster(value);
+        textTest.GetComponent<TextMeshProUGUI>().text = (int)(value * 100) + "%";
+    }
+    public void SetMusicVolume(Slider slider)
+    {
+        //AudioManager.Instance.musicVolume = slider.value;
+        slider.gameObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = slider.value + "%";
+    }
+    public void SetSfxVolume(Slider slider)
+    {
+        //AudioManager.Instance.sfxVolume = slider.value;
+        slider.gameObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = slider.value + "%";
+    }
+
 }

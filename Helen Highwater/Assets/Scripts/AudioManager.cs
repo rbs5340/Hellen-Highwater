@@ -67,4 +67,9 @@ public class AudioManager : MonoBehaviour
     {
         // Not yet implemented
     }
+
+    public void SetMaster(float value)
+    {
+        masterVolume = value;
+    }
 }
