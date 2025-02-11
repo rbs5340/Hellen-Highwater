@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 9151932817546078266}
   - component: {fileID: 181031404208347691}
   - component: {fileID: 4542060978680588264}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Wrench
   m_TagString: Untagged
   m_Icon: {fileID: 0}
