@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using Rewired;
 using UnityEngine.UIElements;
+using System;
 
 public class PlayerController : MonoBehaviour
 {
@@ -124,6 +125,7 @@ public class PlayerController : MonoBehaviour
         if (player.GetButtonDown("Jump") && isGrounded)
 
         {
+            AudioManager.Instance.PlaySoundEffect("helenJump");
             rb.velocity = new Vector2(rb.velocity.x, jumpStrength);
             isGrounded = false;
             playerState = state.rise;
@@ -143,6 +145,7 @@ public class PlayerController : MonoBehaviour
 
             GameObject wrench = Instantiate(WrenchPrefab, attackSpawnPoint.position, Quaternion.identity);
             WrenchBehaviour wrenchScript = wrench.GetComponent<WrenchBehaviour>();
+            AudioManager.Instance.PlaySoundEffect("wrenchThrow");
 
             if (wrenchScript)
             {
@@ -183,6 +186,7 @@ public class PlayerController : MonoBehaviour
                 playerState = state.fall;
             }
         }
+
         //Will begin the dash if not already in dash state and the button is pressed
         else if (player.GetButtonDown("Dash") && dashAvailable)
         {

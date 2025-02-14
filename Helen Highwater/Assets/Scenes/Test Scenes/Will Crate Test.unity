@@ -313,7 +313,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4542060978680588264, guid: f3793ff62ddba3842ad7f4b46577f0ce, type: 3}
       propertyPath: m_IsTrigger
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -515,6 +515,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 517886643097713391, guid: 5dc1c630ff11d6d4a98c08a6a5fff97a, type: 3}
+      propertyPath: m_BodyType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2297762971187378284, guid: 5dc1c630ff11d6d4a98c08a6a5fff97a, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5710980074555733094, guid: 5dc1c630ff11d6d4a98c08a6a5fff97a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -558,6 +566,10 @@ PrefabInstance:
     - target: {fileID: 7920061387723595223, guid: 5dc1c630ff11d6d4a98c08a6a5fff97a, type: 3}
       propertyPath: m_Name
       value: Crate
+      objectReference: {fileID: 0}
+    - target: {fileID: 7920061387723595223, guid: 5dc1c630ff11d6d4a98c08a6a5fff97a, type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
