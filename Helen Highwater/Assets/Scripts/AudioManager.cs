@@ -72,4 +72,14 @@ public class AudioManager : MonoBehaviour
     {
         masterVolume = value;
     }
+
+    public void SetMusic(float value)
+    {
+        musicVolume = value;
+    }
+
+    public void SetSFX(float value)
+    {
+        sfxVolume = value;
+    }
 }
