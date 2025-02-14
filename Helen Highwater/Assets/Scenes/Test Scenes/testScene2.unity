@@ -132,7 +132,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 111644783724776782, guid: 9f7a6206f80ffc1419f8bf167ead765b, type: 3}
       propertyPath: attackAnimationTimer
-      value: 0.5
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 2993369093810902092, guid: 9f7a6206f80ffc1419f8bf167ead765b, type: 3}
       propertyPath: m_Name
