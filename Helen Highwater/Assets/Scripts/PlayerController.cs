@@ -25,8 +25,11 @@ public class PlayerController : MonoBehaviour
 
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
-    public float jumpStrength = 10f;
+    public Vector2 dashSpeed = new Vector2(10f, 2f);
+    public float dashVerticleSpeed = 2f;
+    public float jumpStrength = 8f;
     public float decelerationFactor = 0.9f;
+    public float dashDecelerationFactor = 0.75f;
 
     [Header("Attack Settings")]
     public GameObject WrenchPrefab;
@@ -38,6 +41,9 @@ public class PlayerController : MonoBehaviour
      
     private float direction;
     private state playerState;
+
+    public float dashTimer = 0.5f;
+    private float decelerate;
 
     private void Start()
     {
@@ -59,10 +65,11 @@ public class PlayerController : MonoBehaviour
     {
         HandleMovement();
         HandleJumping();
-        HandleAttack();
+        //HandleAttack();
+        HandleDash();
 
         //Logs player game state for testing purposes
-        Debug.Log(playerState.ToString());
+        //Debug.Log(playerState.ToString());
         
     }
 
@@ -70,27 +77,41 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovement()
     {
-        direction = player.GetAxis("MoveHorizontal");
-
-        if (Mathf.Abs(direction) > 0.1f) // small dead zone to prevent jitter
-
+        if (playerState != state.dash)
         {
-            rb.velocity = new Vector2(direction * moveSpeed, rb.velocity.y);
-            lastDirection = Mathf.Sign(direction); // Update last facing direction
+            direction = player.GetAxis("MoveHorizontal");
 
-            if (isGrounded)
+            if (Mathf.Abs(direction) > 0.1f && Mathf.Abs(rb.velocity.x) < moveSpeed) // small dead zone to prevent jitter
+
             {
-                playerState = state.run;
+                Debug.Log(Mathf.Abs(rb.velocity.x));
+                rb.velocity = new Vector2(direction * moveSpeed, rb.velocity.y);
+                lastDirection = Mathf.Sign(direction); // Update last facing direction
+                
+
+                if (isGrounded)
+                {
+                    playerState = state.run;
+                }
+
             }
-        }
-        else
-        {
-        // Apply deceleration
-            rb.velocity = new Vector2(rb.velocity.x * decelerationFactor, rb.velocity.y);
-
-            if(rb.velocity.x == 0f && isGrounded)
+            else
             {
-                playerState = state.idle;
+
+                // Apply deceleration
+                if (Mathf.Abs(rb.velocity.x) < moveSpeed) { 
+                    decelerate = decelerationFactor;
+                }
+                else
+                {
+                    decelerate = dashDecelerationFactor;
+                }
+                rb.velocity = new Vector2(rb.velocity.x * decelerate, rb.velocity.y);
+
+                if (rb.velocity.x == 0f && isGrounded)
+                {
+                    playerState = state.idle;
+                }
             }
         }
     }
@@ -104,9 +125,10 @@ public class PlayerController : MonoBehaviour
             isGrounded = false;
             playerState = state.rise;
         }
-        if(rb.velocity.y < 0f)
+        if(rb.velocity.y < 0f && playerState != state.dash)
         {
             playerState = state.fall;
+            isGrounded = false;
         }
     }
 
@@ -131,6 +153,47 @@ public class PlayerController : MonoBehaviour
             playerState = state.wrenchThrow;
             attackTimer -= Time.deltaTime;  
         }
+    }
+
+    private void HandleDash()
+    {
+        //Debug.Log(dashTimer);
+        if(playerState == state.dash)
+        {
+            if (dashTimer > 0)
+            {
+                dashTimer -= Time.deltaTime;
+                if (rb.velocity.x >= 0f)
+                {
+                    rb.velocity = new Vector2(dashSpeed.x, rb.velocity.y);
+                }
+                else
+                {
+                    rb.velocity = new Vector2(dashSpeed.x * -1, rb.velocity.y);
+                }
+
+            }
+            else
+            {
+                playerState = state.fall;
+            }
+        }
+        else if (player.GetButtonDown("Attack"))
+        {
+            playerState = state.dash;
+            dashTimer = 0.5f;
+            isGrounded = false;
+            if (rb.velocity.x >= 0f)
+            {
+                rb.velocity = dashSpeed;
+            }
+            else
+            {
+                rb.velocity = dashSpeed * new Vector2(-1f, 1f);
+            }
+
+        }
+        
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
