@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using Rewired;
 using UnityEngine.UIElements;
+using System;
 
 public class PlayerController : MonoBehaviour
 {
@@ -65,7 +66,7 @@ public class PlayerController : MonoBehaviour
     {
         HandleMovement();
         HandleJumping();
-        //HandleAttack();
+        HandleAttack();
         HandleDash();
 
         //Logs player game state for testing purposes
@@ -121,6 +122,7 @@ public class PlayerController : MonoBehaviour
         if (player.GetButtonDown("Jump") && isGrounded)
 
         {
+            AudioManager.Instance.PlaySoundEffect("helenJump");
             rb.velocity = new Vector2(rb.velocity.x, jumpStrength);
             isGrounded = false;
             playerState = state.rise;
@@ -140,6 +142,7 @@ public class PlayerController : MonoBehaviour
 
             GameObject wrench = Instantiate(WrenchPrefab, attackSpawnPoint.position, Quaternion.identity);
             WrenchBehaviour wrenchScript = wrench.GetComponent<WrenchBehaviour>();
+            AudioManager.Instance.PlaySoundEffect("wrenchThrow");
 
             if (wrenchScript)
             {
@@ -178,7 +181,7 @@ public class PlayerController : MonoBehaviour
                 playerState = state.fall;
             }
         }
-        else if (player.GetButtonDown("Attack"))
+        else if (player.GetButtonDown("Dash"))
         {
             playerState = state.dash;
             dashTimer = 0.5f;
