@@ -19,7 +19,8 @@ public class PlayerController : MonoBehaviour
         fall,
         damaged,
         wrenchThrow,
-        dash
+        dash,
+        parry
     }
     
     private Rigidbody2D rb;
@@ -39,6 +40,7 @@ public class PlayerController : MonoBehaviour
 
     private bool isGrounded;
     private float attackTimer;
+    private bool dashAvailable;
      
     private float direction;
     private state playerState;
@@ -85,7 +87,7 @@ public class PlayerController : MonoBehaviour
             if (Mathf.Abs(direction) > 0.1f && Mathf.Abs(rb.velocity.x) < moveSpeed) // small dead zone to prevent jitter
 
             {
-                Debug.Log(Mathf.Abs(rb.velocity.x));
+                //Debug.Log(Mathf.Abs(rb.velocity.x));
                 rb.velocity = new Vector2(direction * moveSpeed, rb.velocity.y);
                 lastDirection = Mathf.Sign(direction); // Update last facing direction
                 
@@ -100,6 +102,7 @@ public class PlayerController : MonoBehaviour
             {
 
                 // Apply deceleration
+                //Decelerates more during the ending of the parry state when your velocity is higher than your regular movement speed
                 if (Mathf.Abs(rb.velocity.x) < moveSpeed) { 
                     decelerate = decelerationFactor;
                 }
@@ -136,7 +139,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleAttack()
     {
-        if (player.GetButtonDown("Attack") && WrenchPrefab && attackSpawnPoint)
+        if (player.GetButtonDown("Attack") && WrenchPrefab && attackSpawnPoint && playerState != state.dash)
         {
             attackTimer = attackAnimationTimer;
 
@@ -161,8 +164,10 @@ public class PlayerController : MonoBehaviour
     private void HandleDash()
     {
         //Debug.Log(dashTimer);
+        //Will keep the player's momentum while in dash state and increment the timer
         if(playerState == state.dash)
         {
+
             if (dashTimer > 0)
             {
                 dashTimer -= Time.deltaTime;
@@ -181,8 +186,11 @@ public class PlayerController : MonoBehaviour
                 playerState = state.fall;
             }
         }
-        else if (player.GetButtonDown("Dash"))
+
+        //Will begin the dash if not already in dash state and the button is pressed
+        else if (player.GetButtonDown("Dash") && dashAvailable)
         {
+            dashAvailable = false;
             playerState = state.dash;
             dashTimer = 0.5f;
             isGrounded = false;
@@ -201,10 +209,12 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        Debug.Log(collision.gameObject.ToString());
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
-            if(Mathf.Abs(rb.velocity.x) > 0)
+            dashAvailable = true;
+            if (Mathf.Abs(rb.velocity.x) > 0)
             {
                 playerState = state.run;
             }
@@ -213,5 +223,17 @@ public class PlayerController : MonoBehaviour
                 playerState = state.idle;
             }
         }
+    }
+
+
+    //Checks for collision with the wrench trigger for the parry jump
+    void OnTriggerEnter2D(Collider2D col)
+    {
+        if (col.gameObject.layer == 11 && playerState == state.dash)
+        {
+            playerState = state.rise;
+            rb.velocity = new Vector2(rb.velocity.x, 5f);
+        }
+
     }
 }
